@@ -84,11 +84,32 @@
             transition: all 0.3s ease;
         }
 
-        /* Full Screen Button */
-        #fullscreen-btn {
+        /* Toast Notification */
+        #toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            z-index: 100;
+            white-space: nowrap;
+        }
+
+        #toast.show {
+            opacity: 1;
+        }
+
+        /* Control Buttons (Sound & Fullscreen) */
+        .control-btn {
             position: absolute;
             top: 20px;
-            right: 20px;
             z-index: 20;
             background: rgba(0, 0, 0, 0.5);
             border: 1px solid rgba(255, 255, 255, 0.3);
@@ -103,10 +124,13 @@
             color: white;
         }
 
-        #fullscreen-btn:hover {
+        .control-btn:hover {
             background: rgba(255, 255, 255, 0.2);
             transform: scale(1.1);
         }
+
+        #fullscreen-btn { right: 20px; }
+        #sound-toggle { right: 80px; }
 
         /* Typography */
         #time {
@@ -234,13 +258,25 @@
             #greeting { font-size: 1.4rem; }
             .glass-panel { padding: 2rem; width: 90%; }
             #fullscreen-btn { top: 10px; right: 10px; width: 40px; height: 40px; }
+            #sound-toggle { top: 10px; right: 60px; width: 40px; height: 40px; }
         }
     </style>
 </head>
 <body>
 
+    <!-- Toast Notification -->
+    <div id="toast"></div>
+
+    <!-- Sound Toggle Button -->
+    <button id="sound-toggle" class="control-btn" onclick="toggleSound()" title="Music On/Off">
+        <!-- Mute Icon (Default) -->
+        <svg id="icon-mute" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="1" y1="1" x2="23" y2="23"></line><path d="M9 9v6a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"></path><path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"></path><line x1="8" y1="2" x2="8" y2="2"></line><line x1="12" y1="2" x2="12" y2="2"></line><line x1="16" y1="2" x2="16" y2="2"></line><line x1="11" y1="1" x2="11" y2="1"></line><line x1="15" y1="1" x2="15" y2="1"></line></svg>
+        <!-- Sound Icon (Hidden) -->
+        <svg id="icon-sound" class="hidden" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+    </button>
+
     <!-- Full Screen Button -->
-    <button id="fullscreen-btn" onclick="toggleFullScreen()" title="Full Screen">
+    <button id="fullscreen-btn" class="control-btn" onclick="toggleFullScreen()" title="Full Screen">
         <svg id="icon-maximize" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
         <svg id="icon-minimize" class="hidden" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>
     </button>
@@ -290,6 +326,14 @@
             night: "https://images.unsplash.com/photo-1531306728370-e2ebd9d7bb99?q=80&w=1887&auto=format&fit=crop"
         };
 
+        // Audio Sources (Ambient sounds)
+        const audioSources = {
+            morning: "https://actions.google.com/sounds/v1/nature/birds_chirping.ogg",
+            afternoon: "https://actions.google.com/sounds/v1/water/river_flow.ogg",
+            evening: "https://actions.google.com/sounds/v1/water/waves_crashing.ogg", 
+            night: "https://actions.google.com/sounds/v1/nature/crickets_chirping.ogg"
+        };
+
         const greetings = {
             morning: "อรุณสวัสดิ์ยามเช้า",
             afternoon: "สวัสดีตอนบ่าย",
@@ -334,14 +378,69 @@
         const quoteAuthorEl = document.getElementById('quote-author');
         const maximizeIcon = document.getElementById('icon-maximize');
         const minimizeIcon = document.getElementById('icon-minimize');
+        const toastEl = document.getElementById('toast');
+        const soundBtn = document.getElementById('sound-toggle');
+        const muteIcon = document.getElementById('icon-mute');
+        const soundIcon = document.getElementById('icon-sound');
 
         let currentPeriod = '';
+        
+        // --- Audio Controls ---
+        let isMuted = true;
+        let audioPlayer = new Audio();
+        audioPlayer.loop = true;
+        audioPlayer.volume = 0.5;
+
+        function toggleSound() {
+            isMuted = !isMuted;
+
+            if (isMuted) {
+                audioPlayer.pause();
+                muteIcon.style.display = 'block';
+                soundIcon.style.display = 'none';
+                soundBtn.style.background = 'rgba(0,0,0,0.5)';
+                showToast("ปิดเสียง");
+            } else {
+                playAtmosphereSound(currentPeriod);
+                muteIcon.style.display = 'none';
+                soundIcon.style.display = 'block';
+                soundBtn.style.background = 'rgba(255,255,255,0.2)';
+                showToast("เปิดเสียงบรรยากาศ");
+            }
+        }
+
+        function playAtmosphereSound(period) {
+            if (isMuted || !period) return;
+            
+            const newSource = audioSources[period];
+            
+            // Only change if source is different to avoid restarting loop unnecessarily
+            // but for simple switching we just check if playing the right src
+            if (audioPlayer.src !== newSource) {
+                audioPlayer.src = newSource;
+                audioPlayer.play().catch(e => console.warn("Auto-play prevented by browser policy", e));
+            } else if (audioPlayer.paused) {
+                audioPlayer.play().catch(e => console.warn("Auto-play prevented by browser policy", e));
+            }
+        }
+
+        // --- Toast Logic ---
+        function showToast(message) {
+            toastEl.textContent = message;
+            toastEl.classList.add('show');
+            setTimeout(() => {
+                toastEl.classList.remove('show');
+            }, 3000);
+        }
 
         // --- Full Screen Logic ---
         function toggleFullScreen() {
             if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(err => {
-                    alert(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+                document.documentElement.requestFullscreen().then(() => {
+                    // Success
+                }).catch(err => {
+                    console.warn(`Error attempting to enable full-screen mode: ${err.message}`);
+                    showToast("โหมดเต็มจออาจไม่รองรับในหน้าต่าง Preview");
                 });
             } else {
                 if (document.exitFullscreen) {
@@ -449,6 +548,11 @@
             if (newPeriod !== currentPeriod) {
                 changeAtmosphere(newPeriod);
                 currentPeriod = newPeriod;
+                
+                // Update sound if sound is on
+                if (!isMuted) {
+                    playAtmosphereSound(newPeriod);
+                }
             }
         }
 
