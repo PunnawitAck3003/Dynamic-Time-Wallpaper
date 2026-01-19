@@ -312,19 +312,61 @@
     </div>
 
     <script>
+        // EXPANDED: Multiple Backgrounds per period for variety
         const backgrounds = {
-            morning: "https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?q=80&w=2070&auto=format&fit=crop",
-            afternoon: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=2070&auto=format&fit=crop",
-            evening: "https://images.unsplash.com/photo-1472120435266-53113306b2a2?q=80&w=2070&auto=format&fit=crop",
-            night: "https://images.unsplash.com/photo-1531306728370-e2ebd9d7bb99?q=80&w=1887&auto=format&fit=crop"
+            morning: [
+                "https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?q=80&w=2070&auto=format&fit=crop", // Misty Hills
+                "https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=2070&auto=format&fit=crop", // Sunrise Field
+                "https://images.unsplash.com/photo-1544866635-714041793776?q=80&w=2070&auto=format&fit=crop", // Morning Coffee/Light
+                "https://images.unsplash.com/photo-1495908333960-5e1b3b9fa0ac?q=80&w=2070&auto=format&fit=crop", // Sun through trees
+                "https://images.unsplash.com/photo-1504198266287-1659872e6590?q=80&w=2070&auto=format&fit=crop", // Calm Morning Water
+                "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=2070&auto=format&fit=crop"  // Bright Morning
+            ],
+            afternoon: [
+                "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=2070&auto=format&fit=crop", // Mountain Lake
+                "https://images.unsplash.com/photo-1472214103451-9374bd1c798e?q=80&w=2070&auto=format&fit=crop", // Green Hills
+                "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?q=80&w=2070&auto=format&fit=crop", // Foggy Forest
+                "https://images.unsplash.com/photo-1501854140884-074cf2b2c3af?q=80&w=2070&auto=format&fit=crop", // Beach Day
+                "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=2070&auto=format&fit=crop", // Sunlight Forest
+                "https://images.unsplash.com/photo-1426604966848-d7adac402bff?q=80&w=2070&auto=format&fit=crop"  // Vast Landscape
+            ],
+            evening: [
+                "https://images.unsplash.com/photo-1472120435266-53113306b2a2?q=80&w=2070&auto=format&fit=crop", // Orange Sunset
+                "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=2070&auto=format&fit=crop", // Beach Sunset
+                "https://images.unsplash.com/photo-1616036740227-bb462729930f?q=80&w=2070&auto=format&fit=crop", // Pink Sky
+                "https://images.unsplash.com/photo-1505322022379-7c3353ee6291?q=80&w=2000&auto=format&fit=crop", // Night lamp evening
+                "https://images.unsplash.com/photo-1414609245224-afa02bfb3fda?q=80&w=2000&auto=format&fit=crop", // Autumn Evening
+                "https://images.unsplash.com/photo-1514477917009-389c76a86b68?q=80&w=2000&auto=format&fit=crop"  // City Dusk
+            ],
+            night: [
+                "https://images.unsplash.com/photo-1531306728370-e2ebd9d7bb99?q=80&w=1887&auto=format&fit=crop", // Galaxy
+                "https://images.unsplash.com/photo-1519681393798-3828fb4090bb?q=80&w=2070&auto=format&fit=crop", // Aurora
+                "https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?q=80&w=2070&auto=format&fit=crop", // Milky Way
+                "https://images.unsplash.com/photo-1506318137071-a8bcbf67cc77?q=80&w=2070&auto=format&fit=crop", // City Night
+                "https://images.unsplash.com/photo-1475274047050-1d0c0975c63e?q=80&w=2072&auto=format&fit=crop", // Night Sky
+                "https://images.unsplash.com/photo-1507502907551-6b614d91284e?q=80&w=2070&auto=format&fit=crop"  // Dark Forest
+            ]
         };
 
-        // NEW: Reliable MP3 sources (SoundJay / Wikimedia Commons Transcoded MP3s)
+        // NEW: Hybrid Audio System (Local Files > Online Fallback)
+        // เพื่อใช้งานไฟล์ในเครื่อง: สร้างโฟลเดอร์ชื่อ 'sounds' แล้วนำไฟล์ .mp3 ไปวางตามชื่อไฟล์ด้านล่าง
         const audioLibrary = {
-            morning: "https://upload.wikimedia.org/wikipedia/commons/transcoded/7/77/Bird_sound.ogg/Bird_sound.ogg.mp3",
-            afternoon: "https://www.soundjay.com/nature/sounds/river-1.mp3",
-            evening: "https://www.soundjay.com/nature/sounds/ocean-wave-1.mp3",
-            night: "https://www.soundjay.com/nature/sounds/cricket-2.mp3"
+            morning: {
+                local: "sounds/morning.mp3",
+                online: "https://upload.wikimedia.org/wikipedia/commons/transcoded/7/77/Bird_sound.ogg/Bird_sound.ogg.mp3"
+            },
+            afternoon: {
+                local: "sounds/afternoon.mp3",
+                online: "https://www.soundjay.com/nature/sounds/river-1.mp3"
+            },
+            evening: {
+                local: "sounds/evening.mp3",
+                online: "https://www.soundjay.com/nature/sounds/ocean-wave-1.mp3"
+            },
+            night: {
+                local: "sounds/night.mp3",
+                online: "https://www.soundjay.com/nature/sounds/cricket-2.mp3"
+            }
         };
 
         const greetings = {
@@ -381,19 +423,33 @@
         let audioPlayer = new Audio();
         audioPlayer.loop = true;
         audioPlayer.volume = 0.5;
+        let usingLocalFile = true; // Track if we are currently trying local file
         
-        // Simplified Error Handling - Only logs once per failure session
+        // Error Handling & Fallback System
         let hasLoggedError = false;
 
         audioPlayer.onerror = function() {
-            if (isMuted) return; // Ignore errors if we are muted
+            if (isMuted) return;
             
-            // Prevent infinite error loops by checking a flag or time
+            // If error occurred while trying local file, switch to online
+            if (usingLocalFile && currentPeriod && audioLibrary[currentPeriod]) {
+                console.warn(`Local file not found: ${audioLibrary[currentPeriod].local}. Switching to online source.`);
+                usingLocalFile = false; // Flag that we switched
+                
+                // Try playing the online source
+                const onlineSrc = audioLibrary[currentPeriod].online;
+                if (audioPlayer.src !== onlineSrc) {
+                    audioPlayer.src = onlineSrc;
+                    audioPlayer.play().catch(e => console.warn("Online fallback auto-play blocked:", e));
+                }
+                return;
+            }
+
+            // If we are already using online source and it fails, then log error
             if(!hasLoggedError) {
                 console.error("Audio Load Error. Source:", audioPlayer.src);
                 showToast("ไม่สามารถโหลดไฟล์เสียงได้ (Network/Format Error)");
                 
-                // Force Mute to stop retries
                 isMuted = true;
                 audioPlayer.pause();
                 muteIcon.style.display = 'block';
@@ -405,7 +461,7 @@
 
         function toggleSound() {
             isMuted = !isMuted;
-            hasLoggedError = false; // Reset error flag on manual toggle
+            hasLoggedError = false; 
 
             if (isMuted) {
                 audioPlayer.pause();
@@ -414,6 +470,8 @@
                 soundBtn.style.background = 'rgba(0,0,0,0.5)';
                 showToast("ปิดเสียง");
             } else {
+                // When turning on sound, try local file first (reset preference)
+                usingLocalFile = true;
                 playAtmosphereSound(currentPeriod);
                 muteIcon.style.display = 'none';
                 soundIcon.style.display = 'block';
@@ -425,22 +483,27 @@
         function playAtmosphereSound(period) {
             if (isMuted || !period) return;
             
-            const sourceUrl = audioLibrary[period];
-            if(!sourceUrl) return;
+            const sources = audioLibrary[period];
+            if(!sources) return;
 
+            // Determine which source to use based on our current state
+            const targetSrc = usingLocalFile ? sources.local : sources.online;
+            
             // Only change src if it's different
-            if (audioPlayer.src !== sourceUrl) {
-                audioPlayer.src = sourceUrl;
-                audioPlayer.load(); // Explicitly load for new source
+            if (audioPlayer.src.indexOf(targetSrc) === -1 && targetSrc !== audioPlayer.src) {
+                audioPlayer.src = targetSrc;
+                audioPlayer.load(); 
                 const playPromise = audioPlayer.play();
                 
                 if (playPromise !== undefined) {
                     playPromise.then(_ => {
-                        hasLoggedError = false; // Success reset
+                        hasLoggedError = false;
+                        // If we successfully played local, keep usingLocalFile = true
                     })
                     .catch(error => {
-                        console.warn("Auto-play prevented or load failed:", error);
-                        // Do not show toast for auto-play blocks, only hard errors
+                        // If play failed immediately (and it wasn't just auto-play block), 
+                        // onerror might trigger, or we catch it here.
+                        console.warn("Play attempt failed:", error);
                     });
                 }
             } else if (audioPlayer.paused) {
@@ -532,6 +595,9 @@
         }
 
         function handleCountryChange() {
+            // Force period check to trigger potential random background change if period is same
+            currentPeriod = ''; // Reset period so updateClock forces a refresh
+            
             updateClock();
             const selectedCountry = countrySelect.value;
             const loc = locations[selectedCountry];
@@ -574,7 +640,12 @@
         }
 
         function changeAtmosphere(period) {
-            const imgUrl = backgrounds[period];
+            // Get array of images for the period
+            const periodImages = backgrounds[period];
+            // Pick a random image from the array
+            const randomIndex = Math.floor(Math.random() * periodImages.length);
+            const imgUrl = periodImages[randomIndex];
+            
             const img = new Image();
             img.src = imgUrl;
             img.onload = () => {
